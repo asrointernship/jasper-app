@@ -169,23 +169,19 @@ public class MapApplet extends PApplet {
                             normalCursor();
                             if(drawFoursquare){
                                 List<FoursquareVenue> clicked = getClickedFs(releasedLocation);
-                                for(Object o: clicked)
-                                    System.out.println(o);
+                                if(clicked.size()>0) new FoursquareDialog(clicked);
                             }
                             if(drawFlickr){
                                 List<FlickrPhoto> clicked = getClickedFl(releasedLocation);
-                                for(Object o: clicked)
-                                    System.out.println(o);
+                                if(clicked.size()>0) new FlickrDialog(clicked);
                             }
                             if(drawInstagram){
                                 List<InstagramPhoto> clicked = getClickedIn(releasedLocation);
-                                for(Object o: clicked)
-                                    System.out.println(o);
+                                if(clicked.size()>0) new InstagramDialog(clicked);
                             }
                             if(drawTwitter){
                                 List<Tweet> clicked = getClickedTw(releasedLocation);
-                                for(Object o: clicked)
-                                    System.out.println(o);
+                                if(clicked.size()>0) new TwitterDialog(clicked);
                             }
                             
                         }
@@ -592,12 +588,12 @@ public class MapApplet extends PApplet {
         parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
     
-    private <T extends Plottable> List<T> getClicked(GridHash<T> grid, Point2f point) {
-        List<T> list = grid.getUnitList(mouseX, mouseY);
+    private List getClicked(GridHash<? extends Plottable> grid, Point2f point) {
+        List<? extends Plottable> list = grid.getUnitList(mouseX, mouseY);
         Location loc = map.pointLocation(point);
         System.out.println(loc.lat + " " + loc.lon);
         List res = new ArrayList();
-        for (T t : list) {
+        for (Plottable t : list) {
             if (Math.abs(t.getLongitude() - loc.lon) < 0.001 && Math.abs(t.getLatitude() - loc.lat) < 0.001) {
                 res.add(t);
             }
