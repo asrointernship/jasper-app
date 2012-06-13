@@ -90,10 +90,13 @@ public class GridHash<T> {
     private int calculateIndex(int x, int y) {
         int gridX = (int) (x / stepX);
         int gridY = (int) (y / stepY);
-        int index = gridX + gridY * rowCount;
-        if (index >= unitCount) {
-            index = unitCount - 1;
+        if (gridX >= rowCount) {
+            gridX = rowCount - 1;
         }
+        if (gridY >= rowCount) {
+            gridY = rowCount - 1;
+        }
+        int index = gridX + gridY * rowCount;
         return index;
     }
 
