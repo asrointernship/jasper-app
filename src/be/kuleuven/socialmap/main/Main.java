@@ -14,7 +14,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 /**
- * 
+ * The class containing the main method.
  *
  * @author Jasper Moeys
  */

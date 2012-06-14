@@ -21,6 +21,7 @@ public class TwitterDialog extends JDialog {
     private static int counter;
     
     public TwitterDialog(List<Tweet> list){
+        super();
         counter++;
         setTitle("Twitter - " + counter);
         setLocation(150, 50);

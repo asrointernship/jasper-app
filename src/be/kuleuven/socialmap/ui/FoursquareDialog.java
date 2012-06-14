@@ -23,6 +23,7 @@ public class FoursquareDialog extends JDialog {
     private static int counter;
     
     public FoursquareDialog(List<FoursquareVenue> list){
+        super();
         counter++;
         setTitle("Foursquare - " + counter);
         setLocation(150, 50);

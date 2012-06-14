@@ -28,8 +28,8 @@ public class MainWindow extends JFrame {
     private JMenu menuFile;
     private JMenuItem saveScreen, exit;
     private JCheckBox flickrCheck, twitterCheck, instaCheck, fsCheck;
-    private JRadioButton texturesOnButton, texturesOffButton, mapOnButton, mapOffButton;
-    private ButtonGroup texturesGroup, mapGroup;
+    private JRadioButton texturesOnButton, texturesOffButton, mapOnButton, mapOffButton, legendOnButton, legendOffButton;
+    private ButtonGroup texturesGroup, mapGroup, legendGroup;
     
     public MainWindow(){
         super("Social Map");
@@ -153,6 +153,27 @@ public class MainWindow extends JFrame {
         mapOffButton.addActionListener(mapListener);
         panel.add(mapVBox);
         
+        Box legendHBox = Box.createHorizontalBox();
+        Box legendVBox = Box.createVerticalBox();
+        Box legendInnerHBox = Box.createHorizontalBox();
+        legendGroup = new ButtonGroup();
+        legendOnButton = new JRadioButton("on");
+        legendOffButton = new JRadioButton("off");
+        legendGroup.add(legendOffButton);
+        legendGroup.add(legendOnButton);
+        legendOffButton.setSelected(true);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        legendVBox.add(legendHBox);
+        legendHBox.add(new JLabel("<html><b>Legend</b></html>"));
+        legendHBox.add(Box.createHorizontalGlue());
+        legendVBox.add(legendInnerHBox);
+        legendInnerHBox.add(legendOnButton);
+        legendInnerHBox.add(legendOffButton);
+        legendInnerHBox.add(Box.createHorizontalGlue());
+        ActionListener legendListener = new LegendActionListener();
+        legendOnButton.addActionListener(legendListener);
+        legendOffButton.addActionListener(legendListener);
+        panel.add(legendVBox);
         
         this.add(panel, BorderLayout.EAST);
         
@@ -242,26 +263,30 @@ public class MainWindow extends JFrame {
         public void itemStateChanged(ItemEvent ie) {
             int state = ie.getStateChange();
             ItemSelectable selected = ie.getItemSelectable();
-            if(selected == flickrCheck){
-                if(state==ItemEvent.SELECTED)
+            if (selected == flickrCheck) {
+                if (state == ItemEvent.SELECTED) {
                     applet.enableFlickr();
-                else if(state==ItemEvent.DESELECTED)
+                } else if (state == ItemEvent.DESELECTED) {
                     applet.disableFlickr();
-            } else if(selected == twitterCheck){
-                if(state==ItemEvent.SELECTED)
+                }
+            } else if (selected == twitterCheck) {
+                if (state == ItemEvent.SELECTED) {
                     applet.enableTwitter();
-                else if(state==ItemEvent.DESELECTED)
+                } else if (state == ItemEvent.DESELECTED) {
                     applet.disableTwitter();
-            } else if(selected == instaCheck){
-                if(state==ItemEvent.SELECTED)
+                }
+            } else if (selected == instaCheck) {
+                if (state == ItemEvent.SELECTED) {
                     applet.enableInstagram();
-                else if(state==ItemEvent.DESELECTED)
+                } else if (state == ItemEvent.DESELECTED) {
                     applet.disableInstagram();
-            } else if(selected == fsCheck){
-                if(state==ItemEvent.SELECTED)
+                }
+            } else if (selected == fsCheck) {
+                if (state == ItemEvent.SELECTED) {
                     applet.enableFoursquare();
-                else if(state==ItemEvent.DESELECTED)
+                } else if (state == ItemEvent.DESELECTED) {
                     applet.disableFoursquare();
+                }
             }
         }
         
@@ -289,6 +314,19 @@ public class MainWindow extends JFrame {
                 applet.enableMap();
             } else if(mapOffButton.getModel() == selected){
                 applet.disableMap();
+            }
+        }
+    }
+    
+    private class LegendActionListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            ButtonModel selected = legendGroup.getSelection();
+            if(legendOnButton.getModel() == selected){
+                applet.enableLegend();
+            } else if(legendOffButton.getModel() == selected){
+                applet.disableLegend();
             }
         }
     }

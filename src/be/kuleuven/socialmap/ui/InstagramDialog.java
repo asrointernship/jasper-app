@@ -26,6 +26,7 @@ public class InstagramDialog extends JDialog implements ActionListener{
     private static int counter;
     
     public InstagramDialog(List<InstagramPhoto> list){
+        super();
         counter++;
         setTitle("Instagram - " + counter);
         setLocation(100, 100);

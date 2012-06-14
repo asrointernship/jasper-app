@@ -25,6 +25,7 @@ public class FlickrDialog extends JDialog implements ActionListener{
     private static int counter;
     
     public FlickrDialog(List<FlickrPhoto> list){
+        super();
         counter++;
         setTitle("Flickr - " + counter);
         setLocation(150, 100);
