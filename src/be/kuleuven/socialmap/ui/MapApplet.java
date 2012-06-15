@@ -108,6 +108,7 @@ public class MapApplet extends PApplet {
 //            }.start();
         } catch (SocialMapException ex) {
             JOptionPane.showMessageDialog(null, "Couldn't load the data:\n" + ex, "Error", JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
         }
     }
     
@@ -742,7 +743,7 @@ public class MapApplet extends PApplet {
                     }
                 }
             } catch (SocialMapException ex) {
-                Logger.getLogger(MapApplet.class.getName()).log(Level.SEVERE, null, ex);
+                JOptionPane.showMessageDialog(null, "Couldn't load the data:\n" + ex, "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
         return clicked;
