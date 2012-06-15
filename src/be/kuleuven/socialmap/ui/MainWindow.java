@@ -4,6 +4,7 @@
  */
 package be.kuleuven.socialmap.ui;
 
+import be.kuleuven.socialmap.io.StaticIO;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -48,7 +49,7 @@ public class MainWindow extends JFrame {
         
         Box zoomBox = Box.createHorizontalBox();
         zoomBox.add(Box.createHorizontalGlue());
-        zoomInButton = new JButton(new AbstractAction("+") {
+        zoomInButton = new JButton(new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -58,22 +59,24 @@ public class MainWindow extends JFrame {
         zoomInButton.setMaximumSize(new Dimension(40, 25));
         zoomInButton.setMinimumSize(new Dimension(40, 25));
         zoomInButton.setPreferredSize(new Dimension(40, 25));
-        zoomInButton.setFont(zoomInButton.getFont().deriveFont(Font.PLAIN, 30));
+        zoomInButton.setIcon(new ImageIcon(StaticIO.getPath("data/plus.png")));
+//        zoomInButton.setFont(zoomInButton.getFont().deriveFont(Font.PLAIN, 30));
 //        zoomInButton.setAlignmentX(CENTER_ALIGNMENT);
         zoomBox.add(zoomInButton);
         zoomBox.add(Box.createRigidArea(new Dimension(5, 0)));
         
-        zoomOutButton = new JButton(new AbstractAction("-") {
+        zoomOutButton = new JButton(new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent ae) {
                 applet.zoomOut();
             }
         });
+        zoomOutButton.setIcon(new ImageIcon(StaticIO.getPath("data/min.png")));
         zoomOutButton.setMaximumSize(new Dimension(40, 25));
         zoomOutButton.setMinimumSize(new Dimension(40, 25));
         zoomOutButton.setPreferredSize(new Dimension(40, 25));
-        zoomOutButton.setFont(zoomOutButton.getFont().deriveFont(Font.PLAIN, 30));
+//        zoomOutButton.setFont(zoomOutButton.getFont().deriveFont(Font.PLAIN, 30));
 //        zoomOutButton.setAlignmentX(CENTER_ALIGNMENT);
         zoomBox.add(zoomOutButton);
         zoomBox.add(Box.createHorizontalGlue());

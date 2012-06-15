@@ -232,6 +232,8 @@ public class Initializer extends JDialog {
                 os = initProps[1];
                 if (os.isEmpty() || currentDirectory.isEmpty()) {
                     doInit = true;
+                } else if(!new File(currentDirectory).exists()){
+                    doInit = true;
                 }
             } catch (IOException ex) {
                 doInit = true;

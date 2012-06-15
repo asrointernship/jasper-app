@@ -24,15 +24,17 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Properties;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import processing.core.PApplet;
 import processing.core.PImage;
 
 /**
- * The Processing applet where the visualization will happen.
+ * The Processing applet where the visualization will happen. To change the
+ * width and height of the applet, you can edit the {@code applet.width} and
+ * {@code applet.height} properties in the "socialmap.properties" file.
+ * The default resolution is 700x580.
  *
  * @author Jasper Moeys
  */
@@ -51,7 +53,7 @@ public class MapApplet extends PApplet {
     private List<MapReduceResult> mrListTw;
     private List<MapReduceResult> mrListIn;
     private List<FoursquareVenue> listFs;
-    private List<FlickrPhoto> listFl ;
+    private List<FlickrPhoto> listFl;
     private List<Tweet> listTw;
     private List<InstagramPhoto> listIn;
     private final PImage displayEmpty = new PImage();
@@ -63,6 +65,8 @@ public class MapApplet extends PApplet {
     private PImage displayLegend = displayEmpty;
     private PImage displayLayers = displayEmpty;
     private boolean drawFoursquare, drawTwitter, drawInstagram, drawFlickr;
+    private int config_width = 700;
+    private int config_height = 580;
     private Location location;
     private int zoom;
     private StaticMap map;
@@ -80,16 +84,22 @@ public class MapApplet extends PApplet {
     private MainWindow parent;
     private GLGraphicsOffScreen offscreen, offscreenMap, offscreenLegend, offscreenFlickr, offscreenFs, offscreenTwitter, offscreenInsta;
 
-    public MapApplet(MainWindow parent){
+    public MapApplet(MainWindow parent) {
+        this.parent = parent;
         try {
-            this.parent = parent;
-            
+            Properties config = StaticIO.getConfig();
+            config_width = Integer.parseInt(config.getProperty("applet.width", "700"));
+            config_height = Integer.parseInt(config.getProperty("applet.height", "580"));
+        } catch (NumberFormatException ex) {
+        }
+
+        try {
             final DataHelper helper = DataHelper.getInstance();
             mrListFs = helper.getMapReducedFoursquareVenues();
             mrListTw = helper.getMapReducedTweets();
             mrListFl = helper.getMapReducedFlickrPhotos();
             mrListIn = helper.getMapReducedInstagramPhotos();
-            
+
 //            new Thread(){
 //
 //                @Override
@@ -111,110 +121,126 @@ public class MapApplet extends PApplet {
             System.exit(1);
         }
     }
-    
+
     @Override
     public void setup() {
-//        try {
-            size(700, 580, GLGraphics.GLGRAPHICS);
-            zoom = 8;
-            location = new Location(50.5f, 4.5f);
+        //        try {
+        size(config_width, config_height, GLGraphics.GLGRAPHICS);
+        zoom = 8;
+        location = new Location(50.5f, 4.5f);
 
 //            img = loadImage("belgium.gif");
 
-            twitterDot = new GLTexture(this, StaticIO.getPath("data/blue.png"));
-            fsDot = new GLTexture(this, StaticIO.getPath("data/green.png"));
-            flickrDot = new GLTexture(this, StaticIO.getPath("data/red.png"));
-            instaDot = fsDot;
-            twitterColor = color(10,20,70);
-            fsColor = color(10,70,20);
-            flickrColor = color(70,20,10);
-            instaColor = fsColor;
+        twitterDot = new GLTexture(this, StaticIO.getPath("data/blue.png"));
+        fsDot = new GLTexture(this, StaticIO.getPath("data/green.png"));
+        flickrDot = new GLTexture(this, StaticIO.getPath("data/red.png"));
+        instaDot = fsDot;
+        twitterColor = color(10, 20, 70);
+        fsColor = color(10, 70, 20);
+        flickrColor = color(70, 20, 10);
+        instaColor = fsColor;
 //            twitterColor = color(0,0,70);
 //            fsColor = color(0,70,0);
 //            flickrColor = color(70,0,0);
 //            instaColor = fsColor;
-            
-            filter = new GLTextureFilter(this, StaticIO.getPath("data/grayscale.xml"));
 
-            frameRate(4);
-            
-            drawFoursquare = true;
-            refreshFoursquare = true;
-            refresh = true;
-            
-            offscreen = new GLGraphicsOffScreen(this, width, height);
-            offscreenMap = new GLGraphicsOffScreen(this, width, height);
-            offscreenLegend = new GLGraphicsOffScreen(this, width, height);
-            offscreenFlickr = new GLGraphicsOffScreen(this, width, height);
-            offscreenFs = new GLGraphicsOffScreen(this, width, height);
-            offscreenTwitter = new GLGraphicsOffScreen(this, width, height);
-            offscreenInsta = new GLGraphicsOffScreen(this, width, height);
-            
-            mrGridFs = new GridHash<MapReduceResult>(width, height, 10);
-            mrGridFl = new GridHash<MapReduceResult>(width, height, 10);
-            mrGridTw = new GridHash<MapReduceResult>(width, height, 10);
-            mrGridIn = new GridHash<MapReduceResult>(width, height, 10);
+        filter = new GLTextureFilter(this, StaticIO.getPath("data/grayscale.xml"));
 
-            this.addMouseListener(new MouseAdapter() {
+        frameRate(4);
 
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    pressedLocation = new Point2f(mouseX, mouseY);
+        drawFoursquare = true;
+        refreshFoursquare = true;
+        refresh = true;
+
+        offscreen = new GLGraphicsOffScreen(this, width, height);
+        offscreenMap = new GLGraphicsOffScreen(this, width, height);
+        offscreenLegend = new GLGraphicsOffScreen(this, width, height);
+        offscreenFlickr = new GLGraphicsOffScreen(this, width, height);
+        offscreenFs = new GLGraphicsOffScreen(this, width, height);
+        offscreenTwitter = new GLGraphicsOffScreen(this, width, height);
+        offscreenInsta = new GLGraphicsOffScreen(this, width, height);
+
+        mrGridFs = new GridHash<MapReduceResult>(width, height, 10);
+        mrGridFl = new GridHash<MapReduceResult>(width, height, 10);
+        mrGridTw = new GridHash<MapReduceResult>(width, height, 10);
+        mrGridIn = new GridHash<MapReduceResult>(width, height, 10);
+
+        this.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                pressedLocation = new Point2f(mouseX, mouseY);
 //                    println(map.pointLocation(pressedLocation));
-                    //location = map.pointLocation(new Point2f(mouseX, mouseY));
-                    moveCursor();
-                }
+                //location = map.pointLocation(new Point2f(mouseX, mouseY));
+                moveCursor();
+            }
 
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    Point2f releasedLocation = new Point2f(mouseX, mouseY);
-                    if(pressedLocation != null){
-                        if (!(releasedLocation.x == pressedLocation.x && releasedLocation.y == pressedLocation.y)) {
-                            float dx = releasedLocation.x - pressedLocation.x;
-                            float dy = releasedLocation.y - pressedLocation.y;
-                            Point2f center = new Point2f(width / 2, height / 2);
-                            center.x -= dx;
-                            center.y -= dy;
-                            location = map.pointLocation(center);
-                            refreshAll();
-                        } else {
-                            normalCursor();
-                            if(drawFoursquare){
-                                List<FoursquareVenue> clicked = getClickedFs(releasedLocation);
-                                if(clicked.size()>0) new FoursquareDialog(clicked);
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                Point2f releasedLocation = new Point2f(mouseX, mouseY);
+                if (pressedLocation != null) {
+                    if (!(releasedLocation.x == pressedLocation.x && releasedLocation.y == pressedLocation.y)) {
+                        float dx = releasedLocation.x - pressedLocation.x;
+                        float dy = releasedLocation.y - pressedLocation.y;
+                        Point2f center = new Point2f(width / 2, height / 2);
+                        center.x -= dx;
+                        center.y -= dy;
+                        location = map.pointLocation(center);
+                        refreshAll();
+                    } else {
+                        normalCursor();
+                        boolean hit = false;
+                        if (drawFoursquare) {
+                            List<FoursquareVenue> clicked = getClickedFs(releasedLocation);
+                            if (clicked.size() > 0) {
+                                new FoursquareDialog(clicked);
+                                hit = true;
                             }
-                            if(drawFlickr){
-                                List<FlickrPhoto> clicked = getClickedFl(releasedLocation);
-                                if(clicked.size()>0) new FlickrDialog(clicked);
-                            }
-                            if(drawInstagram){
-                                List<InstagramPhoto> clicked = getClickedIn(releasedLocation);
-                                if(clicked.size()>0) new InstagramDialog(clicked);
-                            }
-                            if(drawTwitter){
-                                List<Tweet> clicked = getClickedTw(releasedLocation);
-                                if(clicked.size()>0) new TwitterDialog(clicked);
-                            }
-                            
                         }
-                        pressedLocation = null;
-                    }
-                }
-            });
+                        if (drawFlickr) {
+                            List<FlickrPhoto> clicked = getClickedFl(releasedLocation);
+                            if (clicked.size() > 0) {
+                                new FlickrDialog(clicked);
+                                hit = true;
+                            }
+                        }
+                        if (drawInstagram) {
+                            List<InstagramPhoto> clicked = getClickedIn(releasedLocation);
+                            if (clicked.size() > 0) {
+                                new InstagramDialog(clicked);
+                                hit = true;
+                            }
+                        }
+                        if (drawTwitter) {
+                            List<Tweet> clicked = getClickedTw(releasedLocation);
+                            if (clicked.size() > 0) {
+                                new TwitterDialog(clicked);
+                                hit = true;
+                            }
+                        }
+                        if(!hit){
+                            JOptionPane.showMessageDialog(null, "No dots found where you clicked.", "Nothing found", JOptionPane.INFORMATION_MESSAGE);
+                        }
 
-            this.addMouseWheelListener(new MouseAdapter() {
-
-                @Override
-                public void mouseWheelMoved(MouseWheelEvent e) {
-                    if (e.getWheelRotation() > 0) {
-                        zoom--;
-                    } else if (e.getWheelRotation() < 0) {
-                        zoom++;
                     }
-                    location = map.pointLocation(new Point2f(mouseX, mouseY));
-                    refreshAll();
+                    pressedLocation = null;
                 }
-            });
+            }
+        });
+
+        this.addMouseWheelListener(new MouseAdapter() {
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.getWheelRotation() > 0) {
+                    zoom--;
+                } else if (e.getWheelRotation() < 0) {
+                    zoom++;
+                }
+                location = map.pointLocation(new Point2f(mouseX, mouseY));
+                refreshAll();
+            }
+        });
 
 
 //        } catch (SocialMapException ex) {
@@ -235,39 +261,39 @@ public class MapApplet extends PApplet {
             int zoomIndex = (zoom - 8);
             zoomIndex = constrain(zoomIndex, 0, 7);
             int size = zoomToSize[zoomIndex];
-            
+
             if (showMap && refreshMap) {
                 drawMap();
             }
 
-            if(drawFoursquare && refreshFoursquare){
+            if (drawFoursquare && refreshFoursquare) {
                 drawFoursquare(size);
             }
-            
-            if(drawTwitter && refreshTwitter){
+
+            if (drawTwitter && refreshTwitter) {
                 drawTwitter(size);
             }
-            
-            if(drawFlickr && refreshFlickr){
+
+            if (drawFlickr && refreshFlickr) {
                 drawFlickr(size);
             }
-            
-            if(drawInstagram && refreshInstagram){
+
+            if (drawInstagram && refreshInstagram) {
                 drawInstagram(size);
             }
-            
-            if(drawFlickr || drawFoursquare || drawInstagram || drawTwitter){
+
+            if (drawFlickr || drawFoursquare || drawInstagram || drawTwitter) {
                 drawLayers();
             } else {
                 displayLayers = displayEmpty;
             }
-            
-            if(showLegend){
+
+            if (showLegend) {
                 drawLegend();
             }
 
             println((System.nanoTime() - start) / (double) 1000000000);
-            
+
             SwingUtilities.invokeLater(new Runnable() {
 
                 @Override
@@ -276,14 +302,14 @@ public class MapApplet extends PApplet {
                 }
             });
         }
-        
-        if(showMap){
+
+        if (showMap) {
             image(displayMap, 0, 0, width, height);
         }
-        
+
         image(displayLayers, 0, 0, width, height);
-        
-        if(showLegend){
+
+        if (showLegend) {
             image(displayLegend, 0, 0, width, height);
         }
 
@@ -292,48 +318,56 @@ public class MapApplet extends PApplet {
             save = false;
         }
     }
-    
-    private void drawLegend(){
+
+    private void drawLegend() {
         int count = 0;
-        if(drawFlickr) count++;
-        if(drawFoursquare) count++;
-        if(drawInstagram) count++;
-        if(drawTwitter) count++;
-        int delta = (count>1) ? 80 / count : 40;
-        int y = (count>0) ? 80 / (count+1) : 40;
-        
+        if (drawFlickr) {
+            count++;
+        }
+        if (drawFoursquare) {
+            count++;
+        }
+        if (drawInstagram) {
+            count++;
+        }
+        if (drawTwitter) {
+            count++;
+        }
+        int delta = (count > 1) ? 80 / count : 40;
+        int y = (count > 0) ? 80 / (count + 1) : 40;
+
         int legendWidth = 180;
         int legendHeight = 100;
-        int originX = width-legendWidth;
-        int originY = height-legendHeight;
+        int originX = width - legendWidth;
+        int originY = height - legendHeight;
         offscreenLegend.beginDraw();
         offscreenLegend.rectMode(CORNER);
         offscreenLegend.fill(220);
         offscreenLegend.stroke(0);
-        offscreenLegend.rect(originX, originY, legendWidth+1, legendHeight+1);
+        offscreenLegend.rect(originX, originY, legendWidth + 1, legendHeight + 1);
         offscreenLegend.noStroke();
         offscreenLegend.fill(0);
-        if(drawFlickr){
+        if (drawFlickr) {
             flickrDot.render(offscreenLegend, originX + 20, originY + y, 10, 10);
             offscreenLegend.text("Flickr picture", originX + 40, originY + y + 10);
             y += delta;
         }
-        if(drawTwitter){
+        if (drawTwitter) {
             twitterDot.render(offscreenLegend, originX + 20, originY + y, 10, 10);
             offscreenLegend.text("Tweet", originX + 40, originY + y + 10);
             y += delta;
         }
-        if(drawInstagram){
+        if (drawInstagram) {
             instaDot.render(offscreenLegend, originX + 20, originY + y, 10, 10);
             offscreenLegend.text("Instagram picture", originX + 40, originY + y + 10);
             y += delta;
         }
-        if(drawFoursquare){
+        if (drawFoursquare) {
             fsDot.render(offscreenLegend, originX + 20, originY + y, 10, 10);
             offscreenLegend.text("Foursquare Venue", originX + 40, originY + y + 10);
         }
         offscreenLegend.endDraw();
-        
+
         displayLegend = offscreenLegend.getTexture();
     }
 
@@ -341,14 +375,18 @@ public class MapApplet extends PApplet {
         offscreen.beginDraw();
         offscreen.clear(0, 0, 0, 0);
         offscreen.setBlendMode(GLGraphics.ADD);
-        if(drawFoursquare)
+        if (drawFoursquare) {
             offscreen.image(displayFs, 0, 0, width, height);
-        if(drawTwitter)
+        }
+        if (drawTwitter) {
             offscreen.image(displayTw, 0, 0, width, height);
-        if(drawFlickr)
+        }
+        if (drawFlickr) {
             offscreen.image(displayFl, 0, 0, width, height);
-        if(drawInstagram)
+        }
+        if (drawInstagram) {
             offscreen.image(displayIn, 0, 0, width, height);
+        }
         offscreen.setDefaultBlend();
         offscreen.endDraw();
         displayLayers = offscreen.getTexture();
@@ -371,23 +409,23 @@ public class MapApplet extends PApplet {
         refreshInstagram = false;
         offscreenInsta.beginDraw();
         offscreenInsta.clear(0, 0, 0, 0);
-        if(drawTextures){
+        if (drawTextures) {
             offscreenInsta.noStroke();
         } else {
             offscreenInsta.stroke(instaColor);
         }
         offscreenInsta.setBlendMode(GLGraphics.ADD);
 
-        float delta = (float)size/2;
-        if(mapReduced){
+        float delta = (float) size / 2;
+        if (mapReduced) {
             mrGridIn.clear();
             for (MapReduceResult p : mrListIn) {
                 Location loc = new Location(p.getLatitude(), p.getLongitude());
                 Point2f point = map.locationPoint2f(loc);
                 if (point.x >= 0 && point.x <= width && point.y >= 0 && point.y <= height) {
-                    mrGridIn.addObject(p, (int)point.x, (int)point.y);
-                    if(drawTextures) {
-                        instaDot.render(offscreenInsta, point.x - delta, point.y -delta, size, size);
+                    mrGridIn.addObject(p, (int) point.x, (int) point.y);
+                    if (drawTextures) {
+                        instaDot.render(offscreenInsta, point.x - delta, point.y - delta, size, size);
                     } else {
                         offscreenInsta.point(point.x, point.y);
                     }
@@ -399,9 +437,9 @@ public class MapApplet extends PApplet {
                 Location loc = new Location(p.getLatitude(), p.getLongitude());
                 Point2f point = map.locationPoint2f(loc);
                 if (point.x >= 0 && point.x <= width && point.y >= 0 && point.y <= height) {
-                    gridIn.addObject(p, (int)point.x, (int)point.y);
-                    if(drawTextures) {
-                        instaDot.render(offscreenInsta, point.x - delta, point.y -delta, size, size);
+                    gridIn.addObject(p, (int) point.x, (int) point.y);
+                    if (drawTextures) {
+                        instaDot.render(offscreenInsta, point.x - delta, point.y - delta, size, size);
                     } else {
                         offscreenInsta.point(point.x, point.y);
                     }
@@ -417,7 +455,7 @@ public class MapApplet extends PApplet {
         refreshFlickr = false;
         offscreenFlickr.beginDraw();
         offscreenFlickr.clear(0, 0, 0, 0);
-        if(drawTextures){
+        if (drawTextures) {
             offscreenFlickr.noStroke();
             offscreenFlickr.rectMode(CENTER);
         } else {
@@ -425,15 +463,15 @@ public class MapApplet extends PApplet {
         }
         offscreenFlickr.setBlendMode(GLGraphics.ADD);
 
-        float delta = (float)size/2;
-        if(mapReduced){
+        float delta = (float) size / 2;
+        if (mapReduced) {
             mrGridFl.clear();
             for (MapReduceResult p : mrListFl) {
                 Location loc = new Location(p.getLatitude(), p.getLongitude());
                 Point2f point = map.locationPoint2f(loc);
                 if (point.x >= 0 && point.x <= width && point.y >= 0 && point.y <= height) {
-                    mrGridFl.addObject(p, (int)point.x, (int)point.y);
-                    if(drawTextures) {
+                    mrGridFl.addObject(p, (int) point.x, (int) point.y);
+                    if (drawTextures) {
                         flickrDot.render(offscreenFlickr, point.x - delta, point.y - delta, size, size);
                     } else {
                         offscreenFlickr.point(point.x, point.y);
@@ -446,8 +484,8 @@ public class MapApplet extends PApplet {
                 Location loc = new Location(p.getLatitude(), p.getLongitude());
                 Point2f point = map.locationPoint2f(loc);
                 if (point.x >= 0 && point.x <= width && point.y >= 0 && point.y <= height) {
-                    gridFl.addObject(p, (int)point.x, (int)point.y);
-                    if(drawTextures) {
+                    gridFl.addObject(p, (int) point.x, (int) point.y);
+                    if (drawTextures) {
                         flickrDot.render(offscreenFlickr, point.x - delta, point.y - delta, size, size);
                     } else {
                         offscreenFlickr.point(point.x, point.y);
@@ -464,7 +502,7 @@ public class MapApplet extends PApplet {
         refreshTwitter = false;
         offscreenTwitter.beginDraw();
         offscreenTwitter.clear(0, 0, 0, 0);
-        if(drawTextures){
+        if (drawTextures) {
             offscreenTwitter.noStroke();
             offscreenTwitter.rectMode(CENTER);
         } else {
@@ -472,15 +510,15 @@ public class MapApplet extends PApplet {
         }
         offscreenTwitter.setBlendMode(GLGraphics.ADD);
 
-        float delta = (float)size/2;
-        if(mapReduced){
+        float delta = (float) size / 2;
+        if (mapReduced) {
             mrGridTw.clear();
             for (MapReduceResult p : mrListTw) {
                 Location loc = new Location(p.getLatitude(), p.getLongitude());
                 Point2f point = map.locationPoint2f(loc);
                 if (point.x >= 0 && point.x <= width && point.y >= 0 && point.y <= height) {
-                    mrGridTw.addObject(p, (int)point.x, (int)point.y);
-                    if(drawTextures) {
+                    mrGridTw.addObject(p, (int) point.x, (int) point.y);
+                    if (drawTextures) {
                         twitterDot.render(offscreenTwitter, point.x - delta, point.y - delta, size, size);
                     } else {
                         offscreenTwitter.point(point.x, point.y);
@@ -493,8 +531,8 @@ public class MapApplet extends PApplet {
                 Location loc = new Location(p.getLatitude(), p.getLongitude());
                 Point2f point = map.locationPoint2f(loc);
                 if (point.x >= 0 && point.x <= width && point.y >= 0 && point.y <= height) {
-                    gridTw.addObject(p, (int)point.x, (int)point.y);
-                    if(drawTextures) {
+                    gridTw.addObject(p, (int) point.x, (int) point.y);
+                    if (drawTextures) {
                         twitterDot.render(offscreenTwitter, point.x - delta, point.y - delta, size, size);
                     } else {
                         offscreenTwitter.point(point.x, point.y);
@@ -511,7 +549,7 @@ public class MapApplet extends PApplet {
         refreshFoursquare = false;
         offscreenFs.beginDraw();
         offscreenFs.clear(0, 0, 0, 0);
-        if(drawTextures){
+        if (drawTextures) {
             offscreenFs.noStroke();
             offscreenFs.rectMode(CENTER);
         } else {
@@ -519,15 +557,15 @@ public class MapApplet extends PApplet {
         }
         offscreenFs.setBlendMode(GLGraphics.ADD);
 
-        float delta = (float)size/2;
-        if(mapReduced){
+        float delta = (float) size / 2;
+        if (mapReduced) {
             mrGridFs.clear();
             for (MapReduceResult p : mrListFs) {
                 Location loc = new Location(p.getLatitude(), p.getLongitude());
                 Point2f point = map.locationPoint2f(loc);
                 if (point.x >= 0 && point.x <= width && point.y >= 0 && point.y <= height) {
-                    mrGridFs.addObject(p, (int)point.x, (int)point.y);
-                    if(drawTextures) {
+                    mrGridFs.addObject(p, (int) point.x, (int) point.y);
+                    if (drawTextures) {
                         fsDot.render(offscreenFs, point.x - delta, point.y - delta, size, size);
                     } else {
                         offscreenFs.point(point.x, point.y);
@@ -540,8 +578,8 @@ public class MapApplet extends PApplet {
                 Location loc = new Location(p.getLatitude(), p.getLongitude());
                 Point2f point = map.locationPoint2f(loc);
                 if (point.x >= 0 && point.x <= width && point.y >= 0 && point.y <= height) {
-                    gridFs.addObject(p, (int)point.x, (int)point.y);
-                    if(drawTextures) {
+                    gridFs.addObject(p, (int) point.x, (int) point.y);
+                    if (drawTextures) {
                         fsDot.render(offscreenFs, point.x - delta, point.y - delta, size, size);
                     } else {
                         offscreenFs.point(point.x, point.y);
@@ -563,7 +601,7 @@ public class MapApplet extends PApplet {
         refresh = true;
         waitCursor();
     }
-    
+
     public void refreshAllButMap() {
         refreshFlickr = true;
         refreshFoursquare = true;
@@ -572,31 +610,31 @@ public class MapApplet extends PApplet {
         refresh = true;
         waitCursor();
     }
-    
+
     public void refreshMap() {
         refreshMap = true;
         refresh = true;
         waitCursor();
     }
-    
+
     public void refreshTwitter() {
         refreshTwitter = true;
         refresh = true;
         waitCursor();
     }
-    
+
     public void refreshFlickr() {
         refreshFlickr = true;
         refresh = true;
         waitCursor();
     }
-    
+
     public void refreshFoursquare() {
         refreshFoursquare = true;
         refresh = true;
         waitCursor();
     }
-    
+
     public void refreshInstagram() {
         refreshInstagram = true;
         refresh = true;
@@ -612,19 +650,19 @@ public class MapApplet extends PApplet {
         showMap = true;
         refreshMap();
     }
-    
-    public void disableMap(){
+
+    public void disableMap() {
         showMap = false;
         displayMap = displayEmpty;
         refreshMap();
     }
-    
+
     public void enableLegend() {
         showLegend = true;
         refresh = true;
     }
-    
-    public void disableLegend(){
+
+    public void disableLegend() {
         showLegend = false;
         displayLegend = displayEmpty;
         refresh = true;
@@ -639,86 +677,86 @@ public class MapApplet extends PApplet {
         zoom--;
         refreshAll();
     }
-    
-    public void enableFlickr(){
+
+    public void enableFlickr() {
         drawFlickr = true;
         refreshFlickr();
     }
-    
-    public void disableFlickr(){
+
+    public void disableFlickr() {
         drawFlickr = false;
         displayFl = displayEmpty;
         refreshFlickr();
     }
-    
-    public void enableFoursquare(){
+
+    public void enableFoursquare() {
         drawFoursquare = true;
         refreshFoursquare();
     }
-    
-    public void disableFoursquare(){
+
+    public void disableFoursquare() {
         drawFoursquare = false;
         displayFs = displayEmpty;
         refreshFoursquare();
     }
-    
-    public void enableTwitter(){
+
+    public void enableTwitter() {
         drawTwitter = true;
         refreshTwitter();
     }
-    
-    public void disableTwitter(){
+
+    public void disableTwitter() {
         drawTwitter = false;
         displayTw = displayEmpty;
         refreshTwitter();
     }
-    
-    public void enableInstagram(){
+
+    public void enableInstagram() {
         drawInstagram = true;
         refreshInstagram();
     }
-    
-    public void disableInstagram(){
+
+    public void disableInstagram() {
         drawInstagram = false;
         displayIn = displayEmpty;
         refreshInstagram();
     }
-    
-    public void enableTextures(){
+
+    public void enableTextures() {
         drawTextures = true;
         refreshAllButMap();
     }
-    
-    public void disableTextures(){
+
+    public void disableTextures() {
         drawTextures = false;
         refreshAllButMap();
     }
-    
-    public void enableMapReduce(){
+
+    public void enableMapReduce() {
         mapReduced = true;
         refreshAllButMap();
     }
-    
-    public void disableMapReduce(){
+
+    public void disableMapReduce() {
         mapReduced = false;
         refreshAllButMap();
     }
-    
-    private void waitCursor(){
+
+    private void waitCursor() {
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
     }
-    
-    private void moveCursor(){
+
+    private void moveCursor() {
         this.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
         parent.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
     }
-    
-    private void normalCursor(){
+
+    private void normalCursor() {
         this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
-    
+
     private List getClicked(GridHash<? extends Plottable> grid, Point2f point) {
         List<? extends Plottable> list = grid.getUnitList(mouseX, mouseY);
         Location loc = map.pointLocation(point);
@@ -731,8 +769,8 @@ public class MapApplet extends PApplet {
         }
         return res;
     }
-    
-    private List getClickedFromMapReduced(List<MapReduceResult> list){
+
+    private List getClickedFromMapReduced(List<MapReduceResult> list) {
         List clicked = new ArrayList();
         if (list.size() > 0) {
             try {
@@ -748,10 +786,10 @@ public class MapApplet extends PApplet {
         }
         return clicked;
     }
-    
-    private List<FoursquareVenue> getClickedFs(Point2f point){
+
+    private List<FoursquareVenue> getClickedFs(Point2f point) {
         List<FoursquareVenue> clicked;
-        if(mapReduced){
+        if (mapReduced) {
             List<MapReduceResult> res = getClicked(mrGridFs, point);
             clicked = getClickedFromMapReduced(res);
         } else {
@@ -759,10 +797,10 @@ public class MapApplet extends PApplet {
         }
         return clicked;
     }
-    
-    private List<FlickrPhoto> getClickedFl(Point2f point){
+
+    private List<FlickrPhoto> getClickedFl(Point2f point) {
         List<FlickrPhoto> clicked;
-        if(mapReduced){
+        if (mapReduced) {
             List<MapReduceResult> res = getClicked(mrGridFl, point);
             clicked = getClickedFromMapReduced(res);
         } else {
@@ -770,10 +808,10 @@ public class MapApplet extends PApplet {
         }
         return clicked;
     }
-    
-    private List<Tweet> getClickedTw(Point2f point){
+
+    private List<Tweet> getClickedTw(Point2f point) {
         List<Tweet> clicked;
-        if(mapReduced){
+        if (mapReduced) {
             List<MapReduceResult> res = getClicked(mrGridTw, point);
             clicked = getClickedFromMapReduced(res);
         } else {
@@ -781,10 +819,10 @@ public class MapApplet extends PApplet {
         }
         return clicked;
     }
-    
-    private List<InstagramPhoto> getClickedIn(Point2f point){
+
+    private List<InstagramPhoto> getClickedIn(Point2f point) {
         List<InstagramPhoto> clicked;
-        if(mapReduced){
+        if (mapReduced) {
             List<MapReduceResult> res = getClicked(mrGridIn, point);
             clicked = getClickedFromMapReduced(res);
         } else {
@@ -792,5 +830,4 @@ public class MapApplet extends PApplet {
         }
         return clicked;
     }
-    
 }
