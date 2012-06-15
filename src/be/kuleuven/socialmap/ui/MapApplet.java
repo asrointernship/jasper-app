@@ -23,10 +23,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -46,10 +46,10 @@ public class MapApplet extends PApplet {
     private GridHash<FlickrPhoto> gridFl;
     private GridHash<Tweet> gridTw;
     private GridHash<InstagramPhoto> gridIn;
-    private List<MapReduceResult> mrListFs = new ArrayList<MapReduceResult>();
-    private List<MapReduceResult> mrListFl = new ArrayList<MapReduceResult>();
-    private List<MapReduceResult> mrListTw = new ArrayList<MapReduceResult>();
-    private List<MapReduceResult> mrListIn = new ArrayList<MapReduceResult>();
+    private List<MapReduceResult> mrListFs;
+    private List<MapReduceResult> mrListFl;
+    private List<MapReduceResult> mrListTw;
+    private List<MapReduceResult> mrListIn;
     private List<FoursquareVenue> listFs;
     private List<FlickrPhoto> listFl ;
     private List<Tweet> listTw;
@@ -67,12 +67,13 @@ public class MapApplet extends PApplet {
     private int zoom;
     private StaticMap map;
     private boolean refresh, refreshMap, refreshFlickr, refreshFoursquare, refreshTwitter, refreshInstagram, showMap, showLegend, save;
+//    private volatile boolean threadFinished = false;
     private boolean mapReduced = true;
     private boolean drawTextures = false;
     private Point2f pressedLocation;
     private GLTexture twitterDot, fsDot, flickrDot, instaDot;
     private int flickrColor, twitterColor, fsColor, instaColor;
-    private PImage img;
+//    private PImage img;
     private GLTextureFilter filter;
     private int[] zoomToSize = {2, 3, 3, 5, 5, 5, 7, 7};
     private String filename;
@@ -83,18 +84,30 @@ public class MapApplet extends PApplet {
         try {
             this.parent = parent;
             
-            DataHelper helper = DataHelper.getInstance();
+            final DataHelper helper = DataHelper.getInstance();
             mrListFs = helper.getMapReducedFoursquareVenues();
             mrListTw = helper.getMapReducedTweets();
             mrListFl = helper.getMapReducedFlickrPhotos();
             mrListIn = helper.getMapReducedInstagramPhotos();
             
-//            listFs = helper.getFoursquareVenues();
-//            listTw = helper.getTweets();
-//            listFl = helper.getFlickrphotos();
-//            listIn = helper.getInstagramPhotos();
+//            new Thread(){
+//
+//                @Override
+//                public void run() {
+//                    try {
+//                        MapApplet.this.parent.startProgressbar();
+//                        listFs = helper.getFoursquareVenues();
+//                        listTw = helper.getTweets();
+//                        listFl = helper.getFlickrphotos();
+//                        listIn = helper.getInstagramPhotos();
+//                        threadFinished = true;
+//                        MapApplet.this.parent.stopProgressbar();
+//                    } catch (SocialMapException ex) {}
+//                }
+//                
+//            }.start();
         } catch (SocialMapException ex) {
-            Logger.getLogger(MapApplet.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(null, "Couldn't load the data:\n" + ex, "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
     
@@ -107,9 +120,9 @@ public class MapApplet extends PApplet {
 
 //            img = loadImage("belgium.gif");
 
-            twitterDot = new GLTexture(this, StaticIO.getPath("blue.png"));
-            fsDot = new GLTexture(this, StaticIO.getPath("green.png"));
-            flickrDot = new GLTexture(this, StaticIO.getPath("red.png"));
+            twitterDot = new GLTexture(this, StaticIO.getPath("data/blue.png"));
+            fsDot = new GLTexture(this, StaticIO.getPath("data/green.png"));
+            flickrDot = new GLTexture(this, StaticIO.getPath("data/red.png"));
             instaDot = fsDot;
             twitterColor = color(10,20,70);
             fsColor = color(10,70,20);
@@ -120,10 +133,7 @@ public class MapApplet extends PApplet {
 //            flickrColor = color(70,0,0);
 //            instaColor = fsColor;
             
-            filter = new GLTextureFilter(this, StaticIO.getPath("grayscale.xml"));
-
-//            Database<? extends Plottable> database = DatabaseFactory.getDatabase(MapReduceResult.class, FoursquareVenue.class);
-//            coords = database.getAll();
+            filter = new GLTextureFilter(this, StaticIO.getPath("data/grayscale.xml"));
 
             frameRate(4);
             

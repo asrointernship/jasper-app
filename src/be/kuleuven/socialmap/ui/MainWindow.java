@@ -30,6 +30,7 @@ public class MainWindow extends JFrame {
     private JCheckBox flickrCheck, twitterCheck, instaCheck, fsCheck;
     private JRadioButton texturesOnButton, texturesOffButton, mapOnButton, mapOffButton, legendOnButton, legendOffButton;
     private ButtonGroup texturesGroup, mapGroup, legendGroup;
+//    private JProgressBar progress = new JProgressBar();
     
     public MainWindow(){
         super("Social Map");
@@ -175,6 +176,10 @@ public class MainWindow extends JFrame {
         legendOffButton.addActionListener(legendListener);
         panel.add(legendVBox);
         
+//        panel.add(Box.createVerticalGlue());
+//        panel.add(progress);
+//        progress.setStringPainted(true);
+        
         this.add(panel, BorderLayout.EAST);
         
         menubar = new JMenuBar();
@@ -291,6 +296,16 @@ public class MainWindow extends JFrame {
         }
         
     }
+    
+//    public void startProgressbar(){
+//        progress.setString("Loading data...");
+//        progress.setIndeterminate(true);
+//    }
+//    
+//    public void stopProgressbar(){
+//        progress.setString("Data loaded.");
+//        progress.setIndeterminate(false);
+//    }
     
     private class TexturesActionListener implements ActionListener{
 

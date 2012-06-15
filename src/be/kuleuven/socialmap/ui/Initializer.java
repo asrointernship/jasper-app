@@ -258,7 +258,7 @@ public class Initializer extends JDialog {
 
         if (currentDirectory != null && os != null) {
             StaticIO.setCurrentDirectory(currentDirectory);
-            System.setProperty("java.library.path", StaticIO.getPath(os));
+            System.setProperty("java.library.path", StaticIO.getPath("data/"+os));
 
             try {
                 Field fieldSysPath = ClassLoader.class.getDeclaredField("sys_paths");
