@@ -160,10 +160,15 @@ public class MapApplet extends PApplet {
         offscreenTwitter = new GLGraphicsOffScreen(this, width, height);
         offscreenInsta = new GLGraphicsOffScreen(this, width, height);
 
-        mrGridFs = new GridHash<MapReduceResult>(width, height, 10);
-        mrGridFl = new GridHash<MapReduceResult>(width, height, 10);
-        mrGridTw = new GridHash<MapReduceResult>(width, height, 10);
-        mrGridIn = new GridHash<MapReduceResult>(width, height, 10);
+        mrGridFs = new GridHash<MapReduceResult>(width, height, 20);
+        mrGridFl = new GridHash<MapReduceResult>(width, height, 20);
+        mrGridTw = new GridHash<MapReduceResult>(width, height, 20);
+        mrGridIn = new GridHash<MapReduceResult>(width, height, 20);
+        
+        gridFs = new GridHash<FoursquareVenue>(width, height, 20);
+        gridFl = new GridHash<FlickrPhoto>(width, height, 20);
+        gridTw = new GridHash<Tweet>(width, height, 20);
+        gridIn = new GridHash<InstagramPhoto>(width, height, 20);
 
         this.addMouseListener(new MouseAdapter() {
 
